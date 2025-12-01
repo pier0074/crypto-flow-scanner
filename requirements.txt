@@ -12,10 +12,13 @@ flask-cors>=4.0.0
 
 # Notifications
 python-dotenv>=1.0.0
-smtplib-ssl>=1.0.0
 
-# Technical Analysis
-ta-lib>=0.4.28
+# Technical Analysis (optional - for advanced indicators)
+# Note: TA-Lib requires C dependencies. Install with:
+# macOS: brew install ta-lib
+# Ubuntu: sudo apt-get install ta-lib
+# Then: pip install ta-lib
+# ta-lib>=0.4.28
 
 # Charting and Visualization
 plotly>=5.18.0
