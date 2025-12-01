@@ -29,16 +29,43 @@ A sophisticated cryptocurrency trading system for detecting market imbalances (F
 - Phase 1: Manual trading with limit orders via notifications
 - Phase 2: Automated trading via exchange API (planned)
 
-## Installation
+## Quick Start
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/pier0074/crypto-flow-scanner.git
 cd crypto-flow-scanner
 
 # Create virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run setup (creates .env and initializes database)
+python setup.py
+
+# Edit .env with your settings (especially email notifications)
+# Then collect some historical data (this may take a few minutes)
+python scripts/collect_data.py --symbols BTC/USDT ETH/USDT --days 30
+
+# Scan for patterns and get notifications
+python scripts/scan_patterns.py --notify --summary
+```
+
+## Installation
+
+See [Quick Start](#quick-start) above for the fastest way to get started.
+
+### Manual Installation
+
+```bash
+# Clone and setup virtual environment
+git clone https://github.com/pier0074/crypto-flow-scanner.git
+cd crypto-flow-scanner
+python3 -m venv venv
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -126,17 +153,21 @@ crypto-flow-scanner/
 ## Roadmap
 
 - [x] Project setup and architecture
-- [ ] Data collection module
-- [ ] FVG pattern detection
-- [ ] Multi-timeframe analysis
-- [ ] Backtesting engine
-- [ ] Email notifications
-- [ ] Web dashboard
-- [ ] Configuration management
+- [x] Data collection module (ccxt integration)
+- [x] FVG pattern detection
+- [x] Multi-timeframe analysis
+- [x] Confluence detection
+- [x] Backtesting engine
+- [x] Email notifications
+- [x] Configuration management
+- [x] Executable scripts
+- [ ] Web dashboard with charts
 - [ ] Additional patterns (liquidity sweeps, order blocks)
 - [ ] Exchange API integration for automated trading
 - [ ] Mobile notifications (Telegram/Discord)
 - [ ] Machine learning pattern optimization
+- [ ] Real-time WebSocket data streaming
+- [ ] Advanced risk management features
 
 ## Contributing
 
