@@ -1,0 +1,37 @@
+# Data Collection and Processing
+ccxt>=4.2.0
+pandas>=2.1.0
+numpy>=1.24.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Notifications
+python-dotenv>=1.0.0
+smtplib-ssl>=1.0.0
+
+# Technical Analysis
+ta-lib>=0.4.28
+
+# Charting and Visualization
+plotly>=5.18.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+requests>=2.31.0
+
+# Logging
+colorlog>=6.8.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Code Quality
+black>=23.12.0
+flake8>=7.0.0
