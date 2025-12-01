@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 from src.data.models import Pattern
-from src.config.settings import settings
+from src.config.parameters import parameter_manager
 
 
 class BasePattern(ABC):
@@ -42,6 +42,8 @@ class BasePattern(ABC):
         self,
         entry_price: float,
         direction: str,
+        symbol: str = None,
+        timeframe: str = None,
         atr: float = None,
         pattern_data: Dict = None
     ) -> float:
@@ -51,14 +53,19 @@ class BasePattern(ABC):
         Args:
             entry_price: Entry price
             direction: 'bullish' or 'bearish'
+            symbol: Trading pair symbol (for dynamic parameters)
+            timeframe: Timeframe string (for dynamic parameters)
             atr: Average True Range (if available)
             pattern_data: Pattern-specific data for SL calculation
 
         Returns:
             Stop loss price
         """
+        # Get dynamic parameters
+        params = parameter_manager.get_parameters(symbol, timeframe)
+
         if atr:
-            multiplier = settings.STOP_LOSS_ATR_MULTIPLIER
+            multiplier = params.risk.stop_loss_atr_multiplier
             if direction == 'bullish':
                 return entry_price - (atr * multiplier)
             else:
@@ -75,6 +82,8 @@ class BasePattern(ABC):
         entry_price: float,
         stop_loss: float,
         direction: str,
+        symbol: str = None,
+        timeframe: str = None,
         risk_reward_ratio: float = None
     ) -> float:
         """
@@ -84,12 +93,16 @@ class BasePattern(ABC):
             entry_price: Entry price
             stop_loss: Stop loss price
             direction: 'bullish' or 'bearish'
-            risk_reward_ratio: R:R ratio (default from settings)
+            symbol: Trading pair symbol (for dynamic parameters)
+            timeframe: Timeframe string (for dynamic parameters)
+            risk_reward_ratio: R:R ratio (override, default from parameters)
 
         Returns:
             Take profit price
         """
-        rr_ratio = risk_reward_ratio or settings.TAKE_PROFIT_RR_RATIO
+        # Get dynamic parameters
+        params = parameter_manager.get_parameters(symbol, timeframe)
+        rr_ratio = risk_reward_ratio or params.risk.take_profit_rr_ratio
         risk = abs(entry_price - stop_loss)
 
         if direction == 'bullish':
@@ -142,12 +155,16 @@ class BasePattern(ABC):
         if not pattern.is_valid:
             return False
 
-        # Check age
-        age_candles = (current_timestamp - pattern.start_timestamp).total_seconds() / 60
-        max_age = settings.FVG_MAX_AGE_CANDLES
+        # Get dynamic parameters for this pattern
+        params = parameter_manager.get_parameters(pattern.symbol, pattern.timeframe)
 
-        if age_candles > max_age:
-            return False
+        # Check age (for FVG patterns)
+        if pattern.pattern_type == 'fvg':
+            age_candles = (current_timestamp - pattern.start_timestamp).total_seconds() / 60
+            max_age = params.fvg.max_age_candles
+
+            if age_candles > max_age:
+                return False
 
         # Pattern-specific validation (to be overridden)
         return self._validate_pattern_specific(pattern, current_price)

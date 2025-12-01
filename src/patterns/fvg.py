@@ -14,7 +14,7 @@ from datetime import datetime
 
 from src.patterns.base import BasePattern
 from src.data.models import Pattern
-from src.config.settings import settings
+from src.config.parameters import parameter_manager
 
 
 class FVGPattern(BasePattern):
@@ -23,8 +23,6 @@ class FVGPattern(BasePattern):
     def __init__(self):
         """Initialize FVG detector."""
         super().__init__()
-        self.min_gap_percent = settings.FVG_MIN_GAP_PERCENT
-        self.volume_confirmation = settings.FVG_VOLUME_CONFIRMATION
 
     def detect(
         self,
@@ -45,6 +43,11 @@ class FVGPattern(BasePattern):
         """
         if len(df) < 3:
             return []
+
+        # Get dynamic parameters for this symbol/timeframe
+        params = parameter_manager.get_parameters(symbol, timeframe)
+        min_gap_percent = params.fvg.min_gap_percent
+        volume_confirmation = params.fvg.volume_confirmation
 
         patterns = []
 
@@ -107,8 +110,11 @@ class FVGPattern(BasePattern):
         gap_size = gap_top - gap_bottom
         gap_size_percent = (gap_size / gap_bottom) * 100
 
+        # Get parameters for this symbol/timeframe
+        params = parameter_manager.get_parameters(symbol, timeframe)
+
         # Check if gap meets minimum size requirement
-        if gap_size_percent < self.min_gap_percent:
+        if gap_size_percent < params.fvg.min_gap_percent:
             return None
 
         # Check if candle_2 is bullish
@@ -116,7 +122,7 @@ class FVGPattern(BasePattern):
             return None
 
         # Volume confirmation (optional)
-        if self.volume_confirmation:
+        if params.fvg.volume_confirmation:
             # Check if candle_2 has higher volume than candle_1
             if candle_2['volume'] <= candle_1['volume']:
                 return None
@@ -130,6 +136,8 @@ class FVGPattern(BasePattern):
         stop_loss = self.calculate_stop_loss(
             entry_price=gap_bottom,
             direction='bullish',
+            symbol=symbol,
+            timeframe=timeframe,
             atr=atr
         )
 
@@ -137,7 +145,9 @@ class FVGPattern(BasePattern):
         take_profit = self.calculate_take_profit(
             entry_price=entry_price,
             stop_loss=stop_loss,
-            direction='bullish'
+            direction='bullish',
+            symbol=symbol,
+            timeframe=timeframe
         )
 
         # Create Pattern object
@@ -187,8 +197,11 @@ class FVGPattern(BasePattern):
         gap_size = gap_top - gap_bottom
         gap_size_percent = (gap_size / gap_top) * 100
 
+        # Get parameters for this symbol/timeframe
+        params = parameter_manager.get_parameters(symbol, timeframe)
+
         # Check if gap meets minimum size requirement
-        if gap_size_percent < self.min_gap_percent:
+        if gap_size_percent < params.fvg.min_gap_percent:
             return None
 
         # Check if candle_2 is bearish
@@ -196,7 +209,7 @@ class FVGPattern(BasePattern):
             return None
 
         # Volume confirmation (optional)
-        if self.volume_confirmation:
+        if params.fvg.volume_confirmation:
             # Check if candle_2 has higher volume than candle_1
             if candle_2['volume'] <= candle_1['volume']:
                 return None
@@ -210,6 +223,8 @@ class FVGPattern(BasePattern):
         stop_loss = self.calculate_stop_loss(
             entry_price=gap_top,
             direction='bearish',
+            symbol=symbol,
+            timeframe=timeframe,
             atr=atr
         )
 
@@ -217,7 +232,9 @@ class FVGPattern(BasePattern):
         take_profit = self.calculate_take_profit(
             entry_price=entry_price,
             stop_loss=stop_loss,
-            direction='bearish'
+            direction='bearish',
+            symbol=symbol,
+            timeframe=timeframe
         )
 
         # Create Pattern object
