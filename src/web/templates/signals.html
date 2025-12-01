@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Signals - CryptoFlowScanner{% endblock %}
+
+{% block content %}
+<div x-data="signalsData()" x-init="init()" x-cloak>
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-white">Active Trading Signals</h1>
+        <p class="text-gray-400 mt-2">Real-time signals with multi-timeframe confluence</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <template x-for="signal in signals" :key="signal.id">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden hover:border-gray-600 transition-colors">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-white" x-text="signal.symbol"></h3>
+                    <span class="px-3 py-1 rounded-full text-sm font-medium"
+                          :class="signal.direction === 'long' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'"
+                          x-text="signal.direction.toUpperCase()"></span>
+                </div>
+
+                <!-- Body -->
+                <div class="px-6 py-4 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Entry Price:</span>
+                        <span class="font-mono text-white" x-text="signal.entry_price.toFixed(8)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Stop Loss:</span>
+                        <span class="font-mono text-red-400" x-text="signal.stop_loss.toFixed(8)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Take Profit:</span>
+                        <span class="font-mono text-green-400" x-text="signal.take_profit.toFixed(8)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Risk/Reward:</span>
+                        <span class="font-semibold text-white" x-text="signal.risk_reward.toFixed(2) + ':1'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Confluence:</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-900 text-yellow-300" x-text="signal.confluence + ' TFs'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Timeframe:</span>
+                        <span class="text-white" x-text="signal.timeframe"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Notified:</span>
+                        <span x-text="signal.notified ? '✓ Yes' : '✗ No'"
+                              :class="signal.notified ? 'text-green-400' : 'text-red-400'"></span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-3 bg-gray-750 border-t border-gray-700 flex justify-between items-center">
+                    <span class="text-sm text-gray-400" x-text="signal.created_at"></span>
+                    <button @click="viewChart(signal.symbol, signal.timeframe)"
+                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm text-white transition-colors">
+                        View Chart
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="signals.length === 0">
+            <div class="col-span-3 bg-gray-800 rounded-lg border border-gray-700 p-12 text-center">
+                <p class="text-gray-400 text-lg">No active signals</p>
+                <p class="text-gray-500 mt-2">Run the pattern scanner to detect new trading opportunities</p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Chart Modal -->
+    <div x-show="showChart" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+         @click.self="showChart = false">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-6xl mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white" x-text="chartTitle"></h3>
+                <button @click="showChart = false" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div id="chart-container-signals"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function signalsData() {
+    return {
+        signals: [],
+        showChart: false,
+        chartTitle: '',
+
+        async init() {
+            await this.loadSignals();
+        },
+
+        async loadSignals() {
+            try {
+                const response = await fetch('/api/summary');
+                const data = await response.json();
+                this.signals = data.signals.data;
+            } catch (error) {
+                console.error('Error loading signals:', error);
+            }
+        },
+
+        async viewChart(symbol, timeframe) {
+            this.chartTitle = `${symbol} - ${timeframe}`;
+            this.showChart = true;
+
+            try {
+                const response = await fetch(`/api/chart/${symbol}/${timeframe}`);
+                const data = await response.json();
+
+                if (data.chart) {
+                    const chartData = JSON.parse(data.chart);
+                    Plotly.newPlot('chart-container-signals', chartData.data, chartData.layout, {responsive: true});
+                }
+            } catch (error) {
+                console.error('Error loading chart:', error);
+            }
+        }
+    };
+}
+
+function refreshData() {
+    window.location.reload();
+}
+</script>
+{% endblock %}

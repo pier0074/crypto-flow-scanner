@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Parameters - CryptoFlowScanner{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-white">Parameter Configuration</h1>
+    <p class="text-gray-400 mt-2">Configure trading parameters per symbol and timeframe</p>
+</div>
+
+<div class="bg-gray-800 rounded-lg border border-gray-700 p-8">
+    <div class="text-center">
+        <p class="text-gray-300 mb-4">Use the CLI tool to manage parameters:</p>
+        <div class="bg-gray-900 rounded-lg p-4 font-mono text-sm text-left max-w-2xl mx-auto">
+            <div class="text-green-400"># View all parameter overrides</div>
+            <div class="text-white mb-3">python scripts/manage_parameters.py --list-all</div>
+
+            <div class="text-green-400"># Set parameters for BTC/USDT on 1m</div>
+            <div class="text-white mb-3">python scripts/manage_parameters.py --symbol BTC/USDT --timeframe 1m \<br>
+            &nbsp;&nbsp;--set-risk '{"max_risk_percent": 0.5}'</div>
+
+            <div class="text-green-400"># View examples</div>
+            <div class="text-white">python scripts/manage_parameters.py --examples</div>
+        </div>
+        <p class="text-gray-400 mt-4">Web-based parameter editor coming soon!</p>
+    </div>
+</div>
+{% endblock %}
